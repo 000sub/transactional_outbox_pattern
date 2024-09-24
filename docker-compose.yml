@@ -1,0 +1,59 @@
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper'
+    restart: always
+    container_name: 'zookeeper'
+    ports:
+      - '2181:2181'
+    environment:
+      - ZOO_SERVER_ID=1
+      - ZOO_SERVERS=zookeeper:2888:3888::1
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    user: root
+
+  kafka:
+    image: 'bitnami/kafka'
+    container_name: 'kafka'
+    ports:
+      - '9094:9094'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,EXTERNAL://0.0.0.0:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_HEAP_OPTS=-Xmx1G -Xms1G
+      - KAFKA_ENABLE_KRAFT=no
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    depends_on:
+      - zookeeper
+    user: root
+
+  db1:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - '3306:3306'
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - 'mysqldata:/var/lib/mysql'
+  db2:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - 'mongodata:/data'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+volumes:
+  mysqldata:
+  mongodata:
