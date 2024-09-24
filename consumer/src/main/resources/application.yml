@@ -1,7 +1,9 @@
 spring:
   data:
     mongodb:
-      host: localhost
-      port: 27017
+      uri: mongodb://root:root@localhost:27017/test?authSource=admin&authMechanism=SCRAM-SHA-1
   application:
     name: consumer-service
+
+server:
+  port: 8081
